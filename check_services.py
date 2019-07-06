@@ -40,6 +40,7 @@ def check_services_health(services, status_delimiter):
 
 
 def input_formatter(input, services_delimiter, status_delimiter):
+    # remove blank results and extra spaces
     formatted_input = [x.replace(status_delimiter + ' ', status_delimiter).strip() for x in
                        list(filter(None, input.split(services_delimiter)))]
 
@@ -58,18 +59,21 @@ if __name__ == "__main__":
     try:
         URL = sys.argv[1]
     except IndexError:
-        print('Endpoint is missing. Must pass it as first argument (i.e. ./check_services.py <url>)')
+        print('Error: endpoint is missing\nMust pass it as first argument (i.e. ./check_services.py <url>)')
         sys.exit(1)
 
     response = http_get(URL).content.decode('UTF-8')
 
     # set delimiters according to content format
+    services_delimiter = '<br />'
     service_status_delimiter = ':'
-    services = input_formatter(response, services_delimiter='<br />', status_delimiter=service_status_delimiter)
+
+    # parse response into services list
+    services = input_formatter(response, services_delimiter=services_delimiter, status_delimiter=service_status_delimiter)
 
     # sanity check in case content is empty
     if not services:
-        print('no services found')
+        print('Error: no services found in', URL)
         sys.exit(1)
 
     check_services_health(services, status_delimiter=service_status_delimiter)
