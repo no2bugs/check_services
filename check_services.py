@@ -20,12 +20,12 @@ def http_get(url, time_out=60):
     return resp
 
 
-def check_services_health(services):
+def check_services_health(services, status_delimiter):
     services_down = {}  # keep record of all downed services
 
     for service in services:
-        service_name = service.split(':')[0]
-        service_status = service.split(':')[1]
+        service_name = service.split(status_delimiter)[0]
+        service_status = service.split(status_delimiter)[1]
         if service_status != 'OK':
             services_down[service_name] = service_status
 
@@ -64,11 +64,12 @@ if __name__ == "__main__":
     response = http_get(URL).content.decode('UTF-8')
 
     # set delimiters according to content format
-    services = input_formatter(response, services_delimiter='<br />', status_delimiter=':')
+    service_status_delimiter = ':'
+    services = input_formatter(response, services_delimiter='<br />', status_delimiter=service_status_delimiter)
 
     # sanity check in case content is empty
     if not services:
         print('no services found')
         sys.exit(1)
 
-    check_services_health(services)
+    check_services_health(services, status_delimiter=service_status_delimiter)
