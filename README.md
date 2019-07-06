@@ -1,12 +1,16 @@
-**_Monitors services status from HTML page_**
+#### **_Monitors services status from HTML page_**
 
 #### Features
+
+- Parses HTTP response content for services and their status
 
 - Checks each service for status `OK` otherwise returns non 0
 
 - Lists multiple downed services before exit status
 
 - Returns 0 when all services are `OK`
+
+- Validates inputs based on expected content formatting
 
 #### Endpoint response content requirements
 
