@@ -24,11 +24,10 @@ def check_services_health(services):
     services_down = {}  # keep record of all downed services
 
     for service in services:
-        if len(service) > 0:
-            service_name = service.split(':')[0].strip()
-            service_status = service.split(':')[1].strip()
-            if service_status != 'OK':
-                services_down[service_name] = service_status
+        service_name = service.split(':')[0]
+        service_status = service.split(':')[1]
+        if service_status != 'OK':
+            services_down[service_name] = service_status
 
     if services_down:
         # show all downed services before exit non 0
@@ -40,17 +39,34 @@ def check_services_health(services):
         sys.exit(0)
 
 
+def input_formatter(input, services_delimiter, status_delimiter):
+    formatted_input = [x.replace(status_delimiter + ' ', status_delimiter).strip() for x in
+                       list(filter(None, input.split(services_delimiter)))]
+
+    # perform input validation
+    for item in formatted_input:
+        if len(item.split(status_delimiter)) != 2:
+            print('invalid format detected in {}'.format(item))
+            print('services are expected to be separated by "{0}" and status by "{1}"'.format(services_delimiter,
+                                                                                              status_delimiter))
+            sys.exit(1)
+
+    return formatted_input
+
+
 if __name__ == "__main__":
     try:
         URL = sys.argv[1]
-    except IndexError as e:
-        print('Endpoint is missing. Must pass it as first argument (i.e. ./service_check.py <url>)')
+    except IndexError:
+        print('Endpoint is missing. Must pass it as first argument (i.e. ./check_services.py <url>)')
         sys.exit(1)
 
-    response = http_get(URL)
-    services = response.content.decode('UTF-8').split("<br />")
+    response = http_get(URL).content.decode('UTF-8')
 
-    # sanity check in case content is empty or invalid formatting
+    # set delimiters according to content format
+    services = input_formatter(response, services_delimiter='<br />', status_delimiter=':')
+
+    # sanity check in case content is empty
     if not services:
         print('no services found')
         sys.exit(1)
